@@ -28,31 +28,6 @@ function fetchData(endpointUrl, dataName) {
 document.addEventListener('DOMContentLoaded', function() {
   hideData('ResultCol');
   hideData('qualifyingCol');
-  // const loader = document.querySelector("#loader");
-  // loader.style.display = 'none';
-
-  // Retrieve data from localStorage
-  // const dataFor2020 = localStorage.getItem('dataFor2020');
-  // const dataFor2021 = localStorage.getItem('dataFor2021');
-  // const dataFor2022 = localStorage.getItem('dataFor2022');
-  // const dataFor2023 = localStorage.getItem('dataFor2023');
-
-  // if (!dataFor2020) {
-  //   setDataInLocalStorage(2020, 'dataFor2020');
-  // } 
-
-  // if (!dataFor2021) {
-  //   setDataInLocalStorage(2021, 'dataFor2021');
-  // } 
-
-  // if (!dataFor2022) {
-  //   setDataInLocalStorage(2022, 'dataFor2022');
-  // } 
-
-  // if (!dataFor2023) {
-  //   setDataInLocalStorage(2023, 'dataFor2023');
-  // } 
-  
 });
 
 let raceYearElement = document.getElementById('raceYearSelect');
@@ -196,6 +171,44 @@ function printDriverRaces(drivers) {
   
 }
 
+function printConsBasicData(constructor) {
+  document.getElementById("consName").innerHTML = constructor.name;
+  document.getElementById("consWikiLink").setAttribute("href", constructor.url);
+  document.getElementById("consNationality").setAttribute("title", constructor.nationality);
+  document.getElementById("consNationality").setAttribute("alt", constructor.nationality);
+  const flag = countries[constructor.nationality];
+  document.getElementById("consNationality").setAttribute("src", "https://raw.githubusercontent.com/lipis/flag-icons/02b8adceb338125c61f7a1d64d6e5bd9826ae427/flags/1x1/" + flag + ".svg");
+}
+
+
+function printConsRaces(constructors) {
+  // const driverRacesTbody = document.getElementById("driverRaces");
+  
+  // driverRacesTbody.textContent = '';
+
+  // drivers.forEach(driver => {
+  //   const tr = document.createElement('tr');
+
+  //   // Round
+  //   const round = document.createElement('td');
+  //   round.textContent = driver.round;
+  //   tr.appendChild(round);
+
+  //   // Name
+  //   const name = document.createElement('td');
+  //   name.textContent = driver.name;
+  //   tr.appendChild(name);
+
+  //   // Position
+  //   const position = document.createElement('td');
+  //   position.textContent = driver.positionOrder;
+  //   tr.appendChild(position);
+
+  //   driverRacesTbody.appendChild(tr);
+  // });
+  
+}
+
 function displayResults(raceYearSelect, raceId) {
   showData('ResultCol');
   showData('qualifyingCol');
@@ -253,11 +266,24 @@ function displayResults(raceYearSelect, raceId) {
     const constructor = document.createElement('td');
 
     const consLink = document.createElement('a');
-    consLink.setAttribute('id', "constructor"+item.constructor.id);
+    consLink.setAttribute('id', item.constructor.id);
+
+    consLink.addEventListener('click', async (event) => {
+      event.preventDefault(); // Prevent the default link behavior
+      const consId = item.constructor.id; // Get driver ID from the link
+      const consBasicDataEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/constructors.php?id=" + consId;
+      const consBasicData = await fetchDriverConsCircuit(consBasicDataEndpoint);
+      printConsBasicData(consBasicData);
+      const consRaceDataEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/constructorResults.php?constructor=" + item.constructor.ref + "&season=" + raceYearSelect;
+      const consRaceData = await fetchDriverConsCircuit(consRaceDataEndpoint);
+      printConsRaces(consRaceData);
+    });
 
     const consBtn = document.createElement('button');
     consBtn.setAttribute('class', 'btn btn-primary');
     consBtn.textContent = item.constructor.name;
+    consBtn.setAttribute('data-bs-toggle', 'modal');
+    consBtn.setAttribute('data-bs-target', '#consModal');
 
     constructor.appendChild(consLink);
     consLink.appendChild(consBtn);

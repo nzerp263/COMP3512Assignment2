@@ -192,9 +192,57 @@
       </div>
 
 
-      <dialog id="constructor">
-        
-      </dialog>
+    <!-- Driver -->
+      <!-- The Modal -->
+      <div class="modal" id="consModal">
+        <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Modal Heading</h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class='card' style='width: 18rem;'>
+                      <img id="consNationality" src='' class='card-img-top' title='' alt=''>
+                      <div class='card-body'>
+                        <h5 class='card-title' id="consName"></h5>
+                        <a id="consWikiLink" href='' class='btn btn-primary'>Read More</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <table class='table table-dark table-hover'>
+                      <thead>
+                        <tr>
+                          <th>Round</th>
+                          <th>Name</th>
+                          <th>Position</th>
+                        </tr>
+                      </thead>
+                      <tbody id="driverRaces">
+
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
 
       <h1 class="text-center" id="loader">
         <button class="btn btn-primary" disabled>
