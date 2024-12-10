@@ -79,7 +79,6 @@ if (raceYearElement) {
 
 // Display Circuit popup data
 function displayCircuit(circuitData) {
-  console.log(circuitData);
   document.getElementById('circuitName').innerHTML = circuitData.name;
   document.getElementById('circuitHeader').innerHTML = circuitData.name;
   document.getElementById('circuitUrl').innerHTML = "Read More";
@@ -221,7 +220,6 @@ function printDriverRaces(drivers) {
 
   // Loop through all drivers
   drivers.forEach(driver => {
-    console.log(driver);
     const tr = document.createElement('tr');
 
     // Round
