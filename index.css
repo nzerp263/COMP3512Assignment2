@@ -1,0 +1,9 @@
+.table-responsive {
+  overflow: scroll;
+  max-height: 400px;
+}
+
+.table-responsive-driver {
+  overflow: scroll;
+  max-height: 500px;
+}

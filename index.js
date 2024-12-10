@@ -28,6 +28,7 @@ function fetchData(endpointUrl, dataName) {
 document.addEventListener('DOMContentLoaded', function() {
   hideData('ResultCol');
   hideData('qualifyingCol');
+  hideData('races');
 });
 
 let raceYearElement = document.getElementById('raceYearSelect');
@@ -65,9 +66,23 @@ if(raceYearElement) {
   });
 }
 
+function displayCircuit(circuitData) {
+  console.log(circuitData);
+  document.getElementById('circuitName').innerHTML = circuitData.name;
+  document.getElementById('circuitHeader').innerHTML = circuitData.name;
+  document.getElementById('circuitUrl').innerHTML = "Read More";
+  document.getElementById('circuitUrl').setAttribute("href", circuitData.url);
+  document.getElementById('circuitUrl').setAttribute("target", "_blank");
+  document.getElementById('circuitImg').setAttribute("src", "https://cdn-3.motorsport.com/images/amp/Yv8aRRj0/s1000/general-special-feature-2019-v-2.jpg");
+}
+
+function printTopDrivers(driver) {
+  console.log(driver);
+}
+
 function displayRace(raceData) {
+  showData('races');
   const tableBody = document.getElementById('raceYearData');
-  // console.log(raceData);
   JSON.parse(raceData).forEach(item => {
     // Get the current URL
     let currentUrl = window.location.href;
@@ -79,9 +94,31 @@ function displayRace(raceData) {
     let uriWithoutQuery = parsedUrl.pathname;
 
     const tr = document.createElement('tr');
-    const name = document.createElement('td');
-    name.textContent = item.name;
-    tr.appendChild(name);
+    const circuit = document.createElement('td');
+
+    const circuitLink = document.createElement('a');
+    circuitLink.setAttribute('id', item.circuit.id);
+
+    const circuitBtn = document.createElement('button');
+    circuitBtn.setAttribute('class', 'btn btn-primary');
+    circuitBtn.textContent = item.name;
+
+    circuitLink.addEventListener('click', async (event) => {
+      event.preventDefault(); // Prevent the default link behavior
+      const circuitId = item.circuit.id; // Get driver ID from the link
+      const circuitEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/circuits.php?id=" + circuitId;
+      const circuitData = await fetchDriverConsCircuit(circuitEndpoint);
+      displayCircuit(circuitData);
+    });
+
+    
+    circuitLink.appendChild(circuitBtn);
+    circuit.appendChild(circuitLink);
+
+    circuitBtn.setAttribute('data-bs-toggle', 'modal');
+    circuitBtn.setAttribute('data-bs-target', '#circuitModal');
+
+    tr.appendChild(circuit);
     
     const timeTd = document.createElement('td');
     timeTd.textContent = item.time;
@@ -92,11 +129,10 @@ function displayRace(raceData) {
     const aTag = document.createElement('a');
     aTag.setAttribute('href', uriWithoutQuery+'?raceId='+item.id);
     aTag.setAttribute('id', 'raceResultLink');
-    aTag.addEventListener('click', () => {
+    aTag.addEventListener('click', (event) => {
       event.preventDefault();
       displayResults(document.getElementById('raceYearSelect').value, item.id);
       displayQualifying(document.getElementById('raceYearSelect').value, item.id);
-      event.preventDefault();
     } ); 
     
     const aButton = document.createElement('button');
@@ -134,13 +170,16 @@ async function fetchDriverConsCircuit(endpointUrl) {
 
 function printDriverBio(driver) {
   document.getElementById("driverfullName").innerHTML = driver.forename + " " + driver.surname;
+  document.getElementById("driverHeader").innerHTML = driver.forename + " " + driver.surname;
   document.getElementById("driverAge").innerHTML =  new Date().getFullYear() - (new Date(driver.dob)).getFullYear() + " years old";
   document.getElementById("driverCode").innerHTML = driver.code;
   document.getElementById("driverNationality").setAttribute("title", driver.nationality);
   document.getElementById("driverNationality").setAttribute("alt", driver.nationality);
   const flag = countries[driver.nationality];
   document.getElementById("driverNationality").setAttribute("src", "https://raw.githubusercontent.com/lipis/flag-icons/02b8adceb338125c61f7a1d64d6e5bd9826ae427/flags/1x1/" + flag + ".svg");  
-  document.getElementById("driverWikiLink").innerHTML = driver.url;
+  document.getElementById("driverWikiLink").innerHTML = "More information";
+  document.getElementById("driverWikiLink").setAttribute("href", driver.url);
+  document.getElementById("driverWikiLink").setAttribute("target", "_blank");
 }
 
 function printDriverRaces(drivers) {
@@ -173,7 +212,9 @@ function printDriverRaces(drivers) {
 
 function printConsBasicData(constructor) {
   document.getElementById("consName").innerHTML = constructor.name;
+  document.getElementById("consHeader").innerHTML = constructor.name;
   document.getElementById("consWikiLink").setAttribute("href", constructor.url);
+  document.getElementById("consWikiLink").setAttribute("target", "_blank");
   document.getElementById("consNationality").setAttribute("title", constructor.nationality);
   document.getElementById("consNationality").setAttribute("alt", constructor.nationality);
   const flag = countries[constructor.nationality];
@@ -181,133 +222,164 @@ function printConsBasicData(constructor) {
 }
 
 
-function printConsRaces(constructors) {
-  // const driverRacesTbody = document.getElementById("driverRaces");
+function printConsRacesResult(constructors) {
+  const consRacesTbody = document.getElementById("consDriverRaces");
   
-  // driverRacesTbody.textContent = '';
+  consRacesTbody.textContent = '';
 
-  // drivers.forEach(driver => {
-  //   const tr = document.createElement('tr');
+  constructors.forEach(async constructor => {
+    const tr = document.createElement('tr');
 
-  //   // Round
-  //   const round = document.createElement('td');
-  //   round.textContent = driver.round;
-  //   tr.appendChild(round);
+    // Round
+    const round = document.createElement('td');
+    round.textContent = constructor.round;
+    tr.appendChild(round);
 
-  //   // Name
-  //   const name = document.createElement('td');
-  //   name.textContent = driver.name;
-  //   tr.appendChild(name);
+    // Circuit
+    const name = document.createElement('td');
+    name.textContent = constructor.name;
+    tr.appendChild(name);
 
-  //   // Position
-  //   const position = document.createElement('td');
-  //   position.textContent = driver.positionOrder;
-  //   tr.appendChild(position);
+    // Driver
+    const fullname = document.createElement('td');
+    fullname.textContent = constructor.forename + " " + constructor.surname;
+    tr.appendChild(fullname);
 
-  //   driverRacesTbody.appendChild(tr);
-  // });
+    // Position
+    const position = document.createElement('td');
+    position.textContent = constructor.positionOrder;
+    tr.appendChild(position);
+
+    consRacesTbody.appendChild(tr);
+  });
   
 }
 
 function displayResults(raceYearSelect, raceId) {
   showData('ResultCol');
   showData('qualifyingCol');
+  
   const tableBody = document.getElementById('raceResultData');
-
+  tableBody.textContent = '';
   let resultData = localStorage.getItem("resultDataFor"+raceYearSelect);
 
   resultData = JSON.parse(resultData).filter(result => result.race.id == raceId)
+  const topDriver = document.getElementById("topDriver");
+  topDriver.textContent = "";
 
   resultData.forEach(item => {
-    // Get the current URL
-    let currentUrl = window.location.href;
 
-    // Create a URL object
-    let parsedUrl = new URL(currentUrl);
+    if(item.position <= 3) {
+      if (item.position == 1) {
+        rank = "1st";
+      } else if (item.position == 2) {
+        rank = "2nd";
+      } else if (item.position == 3) {
+        rank = "3rd";
+      }
+  
+      const card = document.createElement("div");
+      card.setAttribute("class", "card mt-2 mb-2 bg-primary text-white");
 
-    // Get the path without the query string
-    let uriWithoutQuery = parsedUrl.pathname;
+      const cardBody = document.createElement("div");
+      cardBody.setAttribute("class", "card-body");
 
-    const tr = document.createElement('tr');
+      const cardTitle = document.createElement("h1");
+      cardTitle.setAttribute("class", "card-title text-center");
+      cardTitle.textContent = rank;
 
-    // Position
-    const position = document.createElement('td');
-    position.textContent = item.position;
-    tr.appendChild(position);
- 
-    // Driver
-    const driver = document.createElement('td');
+      const cardPara = document.createElement("p");
+      cardPara.setAttribute("class", "card-text text-center");
+      cardPara.textContent = item.driver.forename + " " + item.driver.surname;
+      
+      cardBody.appendChild(cardTitle);
+      cardBody.appendChild(cardPara);
+      card.appendChild(cardBody);
+      topDriver.appendChild(card);
+    } else {
+      const tr = document.createElement('tr');
 
-    const driverLink = document.createElement('a');
-    driverLink.setAttribute('id', item.driver.id);
+      // Position
+      const position = document.createElement('td');
+      position.textContent = item.position;
+      tr.appendChild(position);
+  
+      // Driver
+      const driver = document.createElement('td');
 
-    driverLink.addEventListener('click', async (event) => {
-      event.preventDefault(); // Prevent the default link behavior
-      const driverId = driverLink.getAttribute('id'); // Get driver ID from the link
-      const driverBioEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/drivers.php?id=" + driverId;
-      const driverBioData = await fetchDriverConsCircuit(driverBioEndpoint);
-      printDriverBio(driverBioData);
-      const driverRacesEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/driverResults.php?driver=" + item.driver.ref + "&season=" + raceYearSelect;
-      const driverRacesData = await fetchDriverConsCircuit(driverRacesEndpoint);
-      printDriverRaces(driverRacesData);
-    });
+      const driverLink = document.createElement('a');
+      driverLink.setAttribute('id', item.driver.id);
 
-    const driverBtn = document.createElement('button');
-    driverBtn.setAttribute('class', 'btn btn-primary');
-    driverBtn.textContent = item.driver.forename + ' ' + item.driver.surname;
-    driverBtn.setAttribute('data-bs-toggle', 'modal');
-    driverBtn.setAttribute('data-bs-target', '#driverModal');
+      driverLink.addEventListener('click', async (event) => {
+        const driverId = driverLink.getAttribute('id'); // Get driver ID from the link
+        const driverBioEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/drivers.php?id=" + driverId;
+        const driverBioData = await fetchDriverConsCircuit(driverBioEndpoint);
+        printDriverBio(driverBioData);
+        const driverRacesEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/driverResults.php?driver=" + item.driver.ref + "&season=" + raceYearSelect;
+        const driverRacesData = await fetchDriverConsCircuit(driverRacesEndpoint);
+        printDriverRaces(driverRacesData);
+        event.preventDefault(); // Prevent the default link behavior
+      });
 
-    driver.appendChild(driverLink);
-    driverLink.appendChild(driverBtn);
-    tr.appendChild(driver);
+      const driverBtn = document.createElement('button');
+      driverBtn.setAttribute('class', 'btn btn-primary');
+      driverBtn.textContent = item.driver.forename + ' ' + item.driver.surname;
+      driverBtn.setAttribute('data-bs-toggle', 'modal');
+      driverBtn.setAttribute('data-bs-target', '#driverModal');
 
-    // Constructor
-    const constructor = document.createElement('td');
+      driver.appendChild(driverLink);
+      driverLink.appendChild(driverBtn);
+      tr.appendChild(driver);
 
-    const consLink = document.createElement('a');
-    consLink.setAttribute('id', item.constructor.id);
+      // Constructor
+      const constructor = document.createElement('td');
 
-    consLink.addEventListener('click', async (event) => {
-      event.preventDefault(); // Prevent the default link behavior
-      const consId = item.constructor.id; // Get driver ID from the link
-      const consBasicDataEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/constructors.php?id=" + consId;
-      const consBasicData = await fetchDriverConsCircuit(consBasicDataEndpoint);
-      printConsBasicData(consBasicData);
-      const consRaceDataEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/constructorResults.php?constructor=" + item.constructor.ref + "&season=" + raceYearSelect;
-      const consRaceData = await fetchDriverConsCircuit(consRaceDataEndpoint);
-      printConsRaces(consRaceData);
-    });
+      const consLink = document.createElement('a');
+      consLink.setAttribute('id', item.constructor.id);
+      consLink.setAttribute('target', "_blank");
 
-    const consBtn = document.createElement('button');
-    consBtn.setAttribute('class', 'btn btn-primary');
-    consBtn.textContent = item.constructor.name;
-    consBtn.setAttribute('data-bs-toggle', 'modal');
-    consBtn.setAttribute('data-bs-target', '#consModal');
+      consLink.addEventListener('click', async (event) => {
+        event.preventDefault(); // Prevent the default link behavior
+        const consId = item.constructor.id; // Get driver ID from the link
+        const consBasicDataEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/constructors.php?id=" + consId;
+        const consBasicData = await fetchDriverConsCircuit(consBasicDataEndpoint);
+        printConsBasicData(consBasicData);
+        const consRaceDataEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/constructorResults.php?constructor=" + item.constructor.ref + "&season=" + raceYearSelect;
+        const consRaceData = await fetchDriverConsCircuit(consRaceDataEndpoint);
+        printConsRacesResult(consRaceData);
+      });
 
-    constructor.appendChild(consLink);
-    consLink.appendChild(consBtn);
-    tr.appendChild(constructor);
-    
-    // laps
-    const laps = document.createElement('td');
-    laps.textContent = item.laps;
-    tr.appendChild(laps);
- 
-    // Points
-    const points = document.createElement('td');
-    points.textContent = item.points;
-    tr.appendChild(points);
- 
-    tableBody.appendChild(tr);
+      const consBtn = document.createElement('button');
+      consBtn.setAttribute('class', 'btn btn-primary');
+      consBtn.textContent = item.constructor.name;
+      consBtn.setAttribute('data-bs-toggle', 'modal');
+      consBtn.setAttribute('data-bs-target', '#consModal');
+
+      constructor.appendChild(consLink);
+      consLink.appendChild(consBtn);
+      tr.appendChild(constructor);
+      
+      // laps
+      const laps = document.createElement('td');
+      laps.textContent = item.laps;
+      tr.appendChild(laps);
+  
+      // Points
+      const points = document.createElement('td');
+      points.textContent = item.points;
+      tr.appendChild(points);
+  
+      tableBody.appendChild(tr);
+    }
   });
 }
 
 function displayQualifying(raceYearSelect, raceId) {
   showData('ResultCol');
   showData('qualifyingCol');
-
+  
   const tableBody = document.getElementById('raceQualifyingData');
+  tableBody.textContent = '';
 
   let qualifyingData = localStorage.getItem("qualifyingDataFor"+raceYearSelect);
 
@@ -334,11 +406,24 @@ function displayQualifying(raceYearSelect, raceId) {
     const driver = document.createElement('td');
 
     const driverLink = document.createElement('a');
-    driverLink.setAttribute('id', "driver"+item.driver.id);
+    driverLink.setAttribute('id', item.driver.id);
+
+    driverLink.addEventListener('click', async (event) => {
+      event.preventDefault(); // Prevent the default link behavior
+      const driverId = item.driver.id; // Get driver ID from the link
+      const driverBioEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/drivers.php?id=" + driverId;
+      const driverBioData = await fetchDriverConsCircuit(driverBioEndpoint);
+      printDriverBio(driverBioData);
+      const driverRacesEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/driverResults.php?driver=" + item.driver.ref + "&season=" + raceYearSelect;
+      const driverRacesData = await fetchDriverConsCircuit(driverRacesEndpoint);
+      printDriverRaces(driverRacesData);
+    });
 
     const driverBtn = document.createElement('button');
     driverBtn.setAttribute('class', 'btn btn-primary');
     driverBtn.textContent = item.driver.forename + ' ' + item.driver.surname;
+    driverBtn.setAttribute('data-bs-toggle', 'modal');
+    driverBtn.setAttribute('data-bs-target', '#driverModal');
 
     driver.appendChild(driverLink);
     driverLink.appendChild(driverBtn);
@@ -350,9 +435,22 @@ function displayQualifying(raceYearSelect, raceId) {
     const consLink = document.createElement('a');
     consLink.setAttribute('id', "constructor"+item.constructor.id);
 
+    consLink.addEventListener('click', async (event) => {
+      event.preventDefault(); // Prevent the default link behavior
+      const consId = item.constructor.id; // Get driver ID from the link
+      const consBasicDataEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/constructors.php?id=" + consId;
+      const consBasicData = await fetchDriverConsCircuit(consBasicDataEndpoint);
+      printConsBasicData(consBasicData);
+      const consRaceDataEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/constructorResults.php?constructor=" + item.constructor.ref + "&season=" + raceYearSelect;
+      const consRaceData = await fetchDriverConsCircuit(consRaceDataEndpoint);
+      printConsRacesResult(consRaceData);
+    });
+
     const consBtn = document.createElement('button');
     consBtn.setAttribute('class', 'btn btn-primary');
     consBtn.textContent = item.constructor.name;
+    consBtn.setAttribute('data-bs-toggle', 'modal');
+    consBtn.setAttribute('data-bs-target', '#consModal');
 
     constructor.appendChild(consLink);
     consLink.appendChild(consBtn);
