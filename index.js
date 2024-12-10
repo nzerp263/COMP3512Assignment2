@@ -202,7 +202,7 @@ async function fetchDriverConsCircuit(endpointUrl) {
 function printDriverBio(driver) {
   document.getElementById("driverfullName").innerHTML = driver.forename + " " + driver.surname;
   document.getElementById("driverHeader").innerHTML = driver.forename + " " + driver.surname;
-  document.getElementById("driverAge").innerHTML =  new Date().getFullYear() - (new Date(driver.dob)).getFullYear() + " years old";
+  document.getElementById("driverAge").innerHTML =  new Date().getFullYear() - (new Date(driver.dob)).getFullYear() + " years old, DOB: " + driver.dob;
   document.getElementById("driverCode").innerHTML = driver.code;
   document.getElementById("driverNationality").setAttribute("title", driver.nationality);
   document.getElementById("driverNationality").setAttribute("alt", driver.nationality);
@@ -221,6 +221,7 @@ function printDriverRaces(drivers) {
 
   // Loop through all drivers
   drivers.forEach(driver => {
+    console.log(driver);
     const tr = document.createElement('tr');
 
     // Round
@@ -343,99 +344,100 @@ function displayResults(raceYearSelect, raceId) {
       cardBody.appendChild(cardPara);
       card.appendChild(cardBody);
       topDriver.appendChild(card);
-    } else {
-      // tr
-      const tr = document.createElement('tr');
+    } 
 
-      // Position
-      const position = document.createElement('td');
-      position.textContent = item.position;
-      tr.appendChild(position);
-  
-      // Driver
-      const driver = document.createElement('td');
+    // tr
+    const tr = document.createElement('tr');
 
-      // Driver link
-      const driverLink = document.createElement('a');
-      driverLink.setAttribute('id', item.driver.id);
+    // Position
+    const position = document.createElement('td');
+    position.textContent = item.position;
+    tr.appendChild(position);
 
-      // Attach click event to the driver link
-      driverLink.addEventListener('click', async (event) => {
-        const driverId = driverLink.getAttribute('id'); // Get driver ID from the link
-        const driverBioEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/drivers.php?id=" + driverId;
-        const driverBioData = await fetchDriverConsCircuit(driverBioEndpoint);
-        
-        // Print driver bio
-        printDriverBio(driverBioData);
-        const driverRacesEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/driverResults.php?driver=" + item.driver.ref + "&season=" + raceYearSelect;
+    // Driver
+    const driver = document.createElement('td');
 
-        // Fetch and print driver races data
-        const driverRacesData = await fetchDriverConsCircuit(driverRacesEndpoint);
-        printDriverRaces(driverRacesData);
-        event.preventDefault(); // Prevent the default link behavior
-      });
+    // Driver link
+    const driverLink = document.createElement('a');
+    driverLink.setAttribute('id', item.driver.id);
 
-      // Driver button
-      const driverBtn = document.createElement('button');
-      driverBtn.setAttribute('class', 'btn btn-primary');
-      driverBtn.textContent = item.driver.forename + ' ' + item.driver.surname;
+    // Attach click event to the driver link
+    driverLink.addEventListener('click', async (event) => {
+      const driverId = driverLink.getAttribute('id'); // Get driver ID from the link
+      const driverBioEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/drivers.php?id=" + driverId;
+      const driverBioData = await fetchDriverConsCircuit(driverBioEndpoint);
       
-      // Attach button to the driver modal
-      driverBtn.setAttribute('data-bs-toggle', 'modal');
-      driverBtn.setAttribute('data-bs-target', '#driverModal');
+      // Print driver bio
+      printDriverBio(driverBioData);
+      const driverRacesEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/driverResults.php?driver=" + item.driver.ref + "&season=" + raceYearSelect;
 
-      // Append button and link to the driver tr
-      driver.appendChild(driverLink);
-      driverLink.appendChild(driverBtn);
-      tr.appendChild(driver);
+      // Fetch and print driver races data
+      const driverRacesData = await fetchDriverConsCircuit(driverRacesEndpoint);
+      printDriverRaces(driverRacesData);
+      event.preventDefault(); // Prevent the default link behavior
+    });
 
-      // Constructor
-      const constructor = document.createElement('td');
+    // Driver button
+    const driverBtn = document.createElement('button');
+    driverBtn.setAttribute('class', 'btn btn-primary');
+    driverBtn.textContent = item.driver.forename + ' ' + item.driver.surname;
+    
+    // Attach button to the driver modal
+    driverBtn.setAttribute('data-bs-toggle', 'modal');
+    driverBtn.setAttribute('data-bs-target', '#driverModal');
 
-      const consLink = document.createElement('a');
-      consLink.setAttribute('id', item.constructor.id);
-      consLink.setAttribute('target', "_blank");
+    // Append button and link to the driver tr
+    driver.appendChild(driverLink);
+    driverLink.appendChild(driverBtn);
+    tr.appendChild(driver);
 
-      consLink.addEventListener('click', async (event) => {
-        event.preventDefault(); // Prevent the default link behavior
-        
-        // Fetch and print constructor basic info
-        const consId = item.constructor.id;
-        const consBasicDataEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/constructors.php?id=" + consId;
-        const consBasicData = await fetchDriverConsCircuit(consBasicDataEndpoint);
-        printConsBasicData(consBasicData);
+    // Constructor
+    const constructor = document.createElement('td');
 
-        // Fetch and print constructor races result
-        const consRaceDataEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/constructorResults.php?constructor=" + item.constructor.ref + "&season=" + raceYearSelect;
-        const consRaceData = await fetchDriverConsCircuit(consRaceDataEndpoint);
-        printConsRacesResult(consRaceData);
-      });
+    const consLink = document.createElement('a');
+    consLink.setAttribute('id', item.constructor.id);
+    consLink.setAttribute('target', "_blank");
 
-      // Constructor button
-      const consBtn = document.createElement('button');
-      consBtn.setAttribute('class', 'btn btn-primary');
-      consBtn.textContent = item.constructor.name;
-
-      // Attach button to the constructor modal
-      consBtn.setAttribute('data-bs-toggle', 'modal');
-      consBtn.setAttribute('data-bs-target', '#consModal');
-
-      constructor.appendChild(consLink);
-      consLink.appendChild(consBtn);
-      tr.appendChild(constructor);
+    consLink.addEventListener('click', async (event) => {
+      event.preventDefault(); // Prevent the default link behavior
       
-      // laps
-      const laps = document.createElement('td');
-      laps.textContent = item.laps;
-      tr.appendChild(laps);
-  
-      // Points
-      const points = document.createElement('td');
-      points.textContent = item.points;
-      tr.appendChild(points);
-  
-      tableBody.appendChild(tr);
-    }
+      // Fetch and print constructor basic info
+      const consId = item.constructor.id;
+      const consBasicDataEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/constructors.php?id=" + consId;
+      const consBasicData = await fetchDriverConsCircuit(consBasicDataEndpoint);
+      printConsBasicData(consBasicData);
+
+      // Fetch and print constructor races result
+      const consRaceDataEndpoint = "https://www.randyconnolly.com/funwebdev/3rd/api/f1/constructorResults.php?constructor=" + item.constructor.ref + "&season=" + raceYearSelect;
+      const consRaceData = await fetchDriverConsCircuit(consRaceDataEndpoint);
+      printConsRacesResult(consRaceData);
+    });
+
+    // Constructor button
+    const consBtn = document.createElement('button');
+    consBtn.setAttribute('class', 'btn btn-primary');
+    consBtn.textContent = item.constructor.name;
+
+    // Attach button to the constructor modal
+    consBtn.setAttribute('data-bs-toggle', 'modal');
+    consBtn.setAttribute('data-bs-target', '#consModal');
+
+    constructor.appendChild(consLink);
+    consLink.appendChild(consBtn);
+    tr.appendChild(constructor);
+    
+    // laps
+    const laps = document.createElement('td');
+    laps.textContent = item.laps;
+    tr.appendChild(laps);
+
+    // Points
+    const points = document.createElement('td');
+    points.textContent = item.points;
+    tr.appendChild(points);
+
+    tableBody.appendChild(tr);
+    
   });
 }
 
